@@ -79,3 +79,4 @@ class RandomForestRegressorGS(Generic[T]):
     @property
     def bestscore(self):
         return self._bestscore
+
