@@ -6,6 +6,7 @@ from dataclasses import dataclass, field, InitVar
 from itertools import product
 import re
 from tqdm import tqdm
+import sys
 
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
@@ -35,7 +36,7 @@ class RandomForestRegressorGS(Generic[T]):
     _best_params: Optional[List] = None
 
 
-    def fit(self, X, y) -> T:
+    def fit(self, X, y, X_test=None, y_test=None) -> T:
         kwargs_instance: Dict[Iterable] = vars(self)
         kwargs: Dict[Iterable] = kwargs_instance.copy()
         for k, v in kwargs_instance.items():
@@ -52,6 +53,10 @@ class RandomForestRegressorGS(Generic[T]):
             rfr.fit(X, y)
 
             score = rfr.score(X, y)
+
+            if not X_test is None and y_test is None:
+                score = rfr.score(X_test, y_test)
+
             if self._bestscore is None:
                 self._bestscore = score
                 self._bestmodel = rfr
