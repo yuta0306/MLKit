@@ -1,6 +1,8 @@
 import rdkit
 from rdkit import Chem, DataStructs
-from rdkit.Chem import Descriptors, AllChem, Draw
+from rdkit.Chem import Descriptors, AllChem, Draw, Fingerprints, Fraggle
+from rdkit.Chem.Fingerprints import FingerprintMols
+from rdkit.Chem.Fraggle import FraggleSim
 from rdkit.Chem.AllChem import GetMorganFingerprintAsBitVect
 from rdkit.DataStructs import ConvertToNumpyArray
 import numpy as np
@@ -67,3 +69,60 @@ def images_to_array(images_path: List[AnyStr], color_mode: AnyStr='rgb', scaling
         images = images / 255
     
     return images
+
+def create_fpmols(smiles: List[str] or str) -> List or str:
+    if isinstance(smiles, list):
+        smiles = [Chem.MolFromSmiles(smile) for smile in smiles]
+        fpmols: List = [
+            FingerprintMols.FingerprintMol(smile)
+                for smile in smiles
+        ]
+    elif isinstance(smiles, str):
+        smiles = Chem.MolFromSmiles(smiles)
+        fpmols: str = FingerprintMols.FingerprintMol(smiles)
+    else:
+        raise ValueError(f'{type(smiles)} is not supported')
+
+    return fpmols
+
+def fr_similarity(base: str, smiles: List[str]) -> List[float]:
+    fraggle_similarity: List = [
+        [generate_sim(base, smile)[0]]
+            for smile in smiles
+    ]
+    
+    return fraggle_similarity
+
+def generate_sim(base: str, smile: str):
+    base = Chem.MolFromSmiles(base)
+    smile = Chem.MolFromSmiles(smile)
+    try:
+        sim, match = FraggleSim.GetFraggleSimilarity(smile, base)
+    except:
+        return 0.0, None
+
+    return sim, match
+
+def ip_similarity(base: str, smiles: List[int]):
+    base = _create_fp(base)
+    smiles = create_fps(smiles)
+
+    sims = [
+        [base @ smile]
+            for smile in smiles
+    ]
+
+    return sims
+
+def fp_similarity(base: str, smiles: List[str]) -> np.ndarray:
+    base: str = create_fpmols(base)
+    smiles: List = create_fpmols(smiles)
+
+    similarities: List[List] = [
+        [DataStructs.FingerprintSimilarity(base, smile)]
+            for smile in smiles
+    ]
+
+    similarities: np.ndarray = np.array(similarities)
+
+    return similarities
