@@ -2,6 +2,7 @@ import sklearn
 from sklearn.model_selection import KFold
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from typing import Any, List, Union
 
@@ -21,7 +22,7 @@ def measure_importances(model: Any, X: List or np.ndarray or pd.DataFrame or pd.
 
     importances: Union[np.ndarray] = None
 
-    for train_idx, _ in kf.split(X):
+    for train_idx, _ in tqdm(kf.split(X)):
         if isinstance(X, (pd.DataFrame, pd.Series)):
             X_train: pd.DataFrame or pd.Series = X.iloc[train_idx]
         else:
