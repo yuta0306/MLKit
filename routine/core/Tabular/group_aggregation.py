@@ -6,6 +6,15 @@ class GroupingAggregation:
         """
         GroupingAggregation:
             The class for aggregation with group
+
+        Parameters
+        ----------
+        group_key: str
+            グループ化する対象のキー
+        group_values: list[str] or tuple[str]
+            グループ化するカラム名のリスト及びタプル
+        agg_methods: list[str, callable] or tuple[str, callable]
+            aggregationの方法の関数名か関数
         """
         self.group_key = group_key
         self.group_values = group_values
@@ -15,6 +24,18 @@ class GroupingAggregation:
         self.agg_methods = [method for method in agg_methods if not method in excludes]
         
     def fit(self, input_: pd.DataFrame, y=None):
+        """
+        Parameters
+        ----------
+        input_: pd.DataFrame
+            Input data
+        y: pd.Series or np.ndarray
+            labels
+
+        Return
+        ------
+        self
+        """
         new_dfs = []
         for agg_method in self.agg_methods:
             for col in self.group_values:
