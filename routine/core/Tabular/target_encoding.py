@@ -29,7 +29,7 @@ class TargetEncoding:
         self.fold = fold
         
         self.encoders = list()
-        for tr_idx, va_idx in fold.split(X):
+        for tr_idx, _ in fold.split(X):
             fold_encoders = list()
             X_train = X.loc[tr_idx, self.categories]
             y_train = target[tr_idx]
