@@ -1,7 +1,29 @@
 import numpy as np
 import copy
 import librosa
-from typing import List
+
+class Compose:
+    def __init__(self, transforms: list) -> None:
+        for trns in transforms:
+            assert hasattr(trns, '__call__')
+        self.transforms = transforms
+
+    def __call__(self, y: np.ndarray):
+        for trns in self.transforms:
+            y = trns(y)
+        return y
+
+class OneOf:
+    def __init__(self, transforms: list) -> None:
+        for trns in transforms:
+            assert hasattr(trns, '__call__')
+        self.transforms = transforms
+        
+    def __call__(self, y: np.ndarray):
+        n_trns = len(self.transforms)
+        trns_idx = np.random.choice(n_trns)
+        trns = self.transforms[trns_idx]
+        return trns(y)
 
 class RightShift(object):
     '''Shift the image ot the right in time.'''
@@ -41,7 +63,7 @@ class RightShift(object):
         assert 0. < p <= 1.
         self.p = p
         
-    def __call__(self, image, dtype='float32'):
+    def __call__(self, image):
         '''
         Augment with shift to right
         
@@ -60,7 +82,7 @@ class RightShift(object):
         shifted_image = np.full(self.input_size, np.min(image), dtype='float32')
         random_pos = np.random.randint(1, self.width_shift_range)
         
-        shifted_image[:, rand_pos:] = copy.deepcopy(image[:, :-rand_pos])
+        shifted_image[:, random_pos:] = copy.deepcopy(image[:, :-random_pos])
         
         return shifted_image
     
